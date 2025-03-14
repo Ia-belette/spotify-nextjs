@@ -5,7 +5,6 @@ import { getXataClient } from './app/xata'
 import { refreshAccessToken } from './app/lib/spotify'
 
 const xata = getXataClient()
-
 export async function middleware(request: NextRequest) {
     const c = getCloudflareContext()
 
@@ -24,26 +23,23 @@ export async function middleware(request: NextRequest) {
             return NextResponse.redirect(new URL('/', request.url))
         }
 
-        // @ts-ignore: next-line
-        const user = await xata.db.users.read(session.user)
-
-        if (!user) {
-            console.log("🚫 Utilisateur introuvable. Redirection.")
+        const userId = session.user?.id || session.user
+        if (!userId) {
             return NextResponse.redirect(new URL('/', request.url))
         }
 
-        let account = await xata.db.accounts
-            .filter({ user: user.id })
-            .getFirst()
+        const [user, account] = await Promise.all([
+            xata.db.users.read(userId.toString()),
+            xata.db.accounts.filter({ user: userId }).getFirst()
+        ])
 
-        if (!account) {
+        if (!user || !account) {
             return NextResponse.redirect(new URL('/', request.url))
         }
 
         const now = Math.floor(Date.now() / 1000)
 
         if (account.expires_at && account.expires_at < now) {
-
             if (!account.refresh_token) {
                 return NextResponse.redirect(new URL('/', request.url))
             }
@@ -63,6 +59,7 @@ export async function middleware(request: NextRequest) {
                 access_token: newAccessToken,
                 expires_at: now + 3600
             })
+
         }
 
         return NextResponse.next()
