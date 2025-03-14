@@ -124,7 +124,8 @@ export async function GET(request: Request) {
         secure: true,
         sameSite: 'strict',
         path: '/',
-        expires: new Date(Date.now() + 60 * 60 * 24 * 7),
+        maxAge: 60 * 60 * 24 * 7,
+        expires: new Date(Date.now() + 60 * 60 * 24 * 7)
     });
 
     cookieStores.delete('spotify_state');
