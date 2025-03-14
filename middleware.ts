@@ -63,7 +63,6 @@ export async function middleware(request: NextRequest) {
                 access_token: newAccessToken,
                 expires_at: now + 3600
             })
-
         }
 
         return NextResponse.next()
