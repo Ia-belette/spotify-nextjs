@@ -34,6 +34,7 @@ export async function refreshAccessToken(userId: string, refreshToken: string, c
 
         return data.access_token;
     } catch (error) {
+        console.error(error);
         return null;
     }
 }
